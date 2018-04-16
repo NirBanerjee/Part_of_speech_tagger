@@ -3,16 +3,73 @@ from FileIO import readFile, writeToFile
 import sys
 import numpy as np
 
-def generateEmissionMatrix(traininInput, wordIndex, indexToWord):
-	hm = {}
+def generateEmissionMatrix(trainingInput, wordIndex, indexToWord):
+	wordhm = {}
+	taghm = {}
 
+	i = 0
+	for word in wordIndex:
+		word = word.strip()
+		taghm[word] = i 
+		i = i + 1
+
+	i = 0
+	for word in indexToWord:
+		word = word.strip()
+		wordhm[word] = i
+		i = i + 1
+
+	emissionMatrix = np.ones(shape = (len(wordIndex), len(indexToWord)))
+
+	for line in trainingInput:
+		line = line.strip()
+		lineParts = line.split(" ")
+		for part in lineParts:
+			exp = part.split("_")
+			word = exp[0]
+			tag = exp[1]
+			wIndex = wordhm[word]
+			tIndex = taghm[tag]
+			emissionMatrix[tIndex][wIndex] = emissionMatrix[tIndex][wIndex] + 1
+
+	sumArray = np.sum(emissionMatrix, axis = 1)
+	for i in range(len(emissionMatrix)):
+		for j in range(len(emissionMatrix[0])):
+			emissionMatrix[i][j] = emissionMatrix[i][j] / (sumArray[i])
+
+	print emissionMatrix
+	return emissionMatrix
+
+def generateTransitionMatrix(trainingInput, wordIndex):
+	hm = {}
+	i = 0
 	for word in wordIndex:
 		word = word.strip()
 		hm[word] = i
 		i = i + 1
 
+	transitionMatrix = np.ones(shape = (len(wordIndex), len(wordIndex)))
 
-	return 0
+	for line in trainingInput:
+		line = line.strip()
+		lineParts = line.split(" ")
+		prevW = lineParts[0]
+		for k in range(1, len(lineParts)):
+			currW = lineParts[k]
+			keys = currW.split("_")
+			currIdx = hm[keys[1]]
+			keys = prevW.split("_")
+			prevIdx = hm[keys[1]]
+			transitionMatrix[prevIdx][currIdx] = transitionMatrix[prevIdx][currIdx] + 1
+			prevW = currW
+
+	sumArray = np.sum(transitionMatrix, axis = 1)
+	
+	for i in range(len(transitionMatrix)):
+		for j in range(len(transitionMatrix[0])):
+			transitionMatrix[i][j] = transitionMatrix[i][j] / (sumArray[i])
+
+	return transitionMatrix
 
 def generatePriorMatrix(trainingInput, wordIndex):
 	hm = {}
@@ -47,7 +104,7 @@ if __name__ == '__main__':
 	indexTagFile = sys.argv[3]
 	hmmPriorFile = sys.argv[4]
 	hmmEmissionFile = sys.argv[5]
-	#hmmTransitionFile = sys.argv[6]
+	hmmTransitionFile = sys.argv[6]
 
 	#Read the training file
 	trainingInput = readFile(trainingFile)
@@ -56,15 +113,17 @@ if __name__ == '__main__':
 	#Read the index to word file
 	indexToWord = readFile(indexTagFile)
 
-	#Generate Prior Matric
+	#Generate Prior Matrix
 	priorMatrix = generatePriorMatrix(trainingInput, wordIndex)
 	writeToFile(hmmPriorFile, priorMatrix)
+
+	#Generate Transition Matrix
+	transitionMatrix = generateTransitionMatrix(trainingInput, wordIndex)
+	writeToFile(hmmTransitionFile, transitionMatrix)
 
 	#Generate Emission Matrix
 	emissionMatrix = generateEmissionMatrix(trainingInput, wordIndex, indexToWord)
 	writeToFile(hmmEmissionFile, emissionMatrix)
-
-	#Generate Transition Matrix
 
 
 	
