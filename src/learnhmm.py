@@ -1,5 +1,5 @@
 from __future__ import division
-from FileIO import readFile, writeToFile
+from FileIO import readFile
 import sys
 import numpy as np
 
@@ -37,7 +37,6 @@ def generateEmissionMatrix(trainingInput, wordIndex, indexToWord):
 		for j in range(len(emissionMatrix[0])):
 			emissionMatrix[i][j] = emissionMatrix[i][j] / (sumArray[i])
 
-	print emissionMatrix
 	return emissionMatrix
 
 def generateTransitionMatrix(trainingInput, wordIndex):
@@ -115,15 +114,15 @@ if __name__ == '__main__':
 
 	#Generate Prior Matrix
 	priorMatrix = generatePriorMatrix(trainingInput, wordIndex)
-	writeToFile(hmmPriorFile, priorMatrix)
+	np.savetxt(hmmPriorFile, priorMatrix, fmt = '%1.10e')
 
 	#Generate Transition Matrix
 	transitionMatrix = generateTransitionMatrix(trainingInput, wordIndex)
-	writeToFile(hmmTransitionFile, transitionMatrix)
+	np.savetxt(hmmTransitionFile, transitionMatrix, fmt = '%1.10e')
 
 	#Generate Emission Matrix
 	emissionMatrix = generateEmissionMatrix(trainingInput, wordIndex, indexToWord)
-	writeToFile(hmmEmissionFile, emissionMatrix)
+	np.savetxt(hmmEmissionFile, emissionMatrix, fmt = '%1.10e')
 
 
 	
