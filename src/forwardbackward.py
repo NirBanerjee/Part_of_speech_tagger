@@ -3,6 +3,26 @@ from FileIO import readFile, writeToFile
 import sys
 import numpy as np
 
+#Method to predict tag for each line of input
+def predictTags(line, probDist, tagHashMap, reverseTagMap):
+
+	parts = line.split(" ")
+	i = 0
+	line = ""
+	for part in parts:
+		wordTagPair = part.split("_")
+		word = wordTagPair[0]
+		vector = probDist[:,i]
+		idx = np.argmax(vector)
+		tag = reverseTagMap[idx]
+		tag = tag.strip()
+		word = word + "_" + tag
+		line = line + word + " "
+		i = i + 1
+
+	return line
+
+#Method to perform backward Algorithm for a line of input
 def backwardAlgo(line, wordHashMap, tagHashMap, transitionMatrix, emissionMatrix, tagIndex):
 
 	parts = line.split(" ")
@@ -30,6 +50,7 @@ def backwardAlgo(line, wordHashMap, tagHashMap, transitionMatrix, emissionMatrix
 
 	return beta
 
+#Method to perform forward Algorithm for a line of input
 def forwardAlgo(line, wordHashMap, tagHashMap, priorVector, transitionMatrix, emissionMatrix, tagIndex):
 
 	parts = line.split(" ");
@@ -57,6 +78,16 @@ def forwardAlgo(line, wordHashMap, tagHashMap, priorVector, transitionMatrix, em
 
 	return alpha
 
+#Method to generate map for index against tag
+def generateReverseMap(tagIndex):
+	hashMap = {}
+	for i in range(len(tagIndex)):
+		hashMap[i] = tagIndex[i]
+		i = i + 1
+
+	return hashMap
+
+#Method to generate map for tag with index
 def generateHashMap(indexList):
 	hashMap = {}
 	i = 0
@@ -67,20 +98,23 @@ def generateHashMap(indexList):
 
 	return hashMap
 
+#Method to predict tags by traversing through test file line by line
 def performForwardBackward(testData, wordIndex, tagIndex, priorVector, transitionMatrix, emissionMatrix):
 
 	wordHashMap = generateHashMap(wordIndex)
 	tagHashMap = generateHashMap(tagIndex)
+	reverseTagMap = generateReverseMap(tagIndex)
 	labelList = []
+
+	i = 0
 	for line in testData:
 		line = line.strip()
 		alpha = forwardAlgo(line, wordHashMap, tagHashMap, priorVector, transitionMatrix, emissionMatrix, tagIndex)
 		beta  = backwardAlgo(line, wordHashMap, tagHashMap, transitionMatrix, emissionMatrix, tagIndex)
 		probDist = alpha * beta
-		predictLine = predictLabels(line, probDist)
-		print predictLine
-		exit()
-		#labelList.append(predictLine)
+		predictLine = predictTags(line, probDist, tagHashMap, reverseTagMap)
+		labelList.append(predictLine)
+		i = i + 1
 		
 	return labelList
 
@@ -93,8 +127,9 @@ if __name__ == '__main__':
 	hmmPriorFile = sys.argv[4]
 	hmmEmissionFile = sys.argv[5]
 	hmmTransitionFile = sys.argv[6]
-	predictionFIle = sys.argv[7]
+	predictionFile = sys.argv[7]
 
+	#Read the test data
 	testData = readFile(testFile)
 	wordIndex = readFile(indexWordFile)
 	tagIndex = readFile(indexTagFile)
@@ -104,5 +139,7 @@ if __name__ == '__main__':
 	transitionMatrix = np.loadtxt(hmmTransitionFile)
 	emissionMatrix = np.loadtxt(hmmEmissionFile)
 
+	#Perform forward backward algorithm to generate labels for data
 	labelList = performForwardBackward(testData, wordIndex, tagIndex, priorVector, transitionMatrix, emissionMatrix)
-	#writeToFile(labelList)
+	#Write output result to file
+	writeToFile(predictionFile, labelList)

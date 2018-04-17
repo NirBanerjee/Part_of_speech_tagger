@@ -3,6 +3,7 @@ from FileIO import readFile
 import sys
 import numpy as np
 
+#Method to generate Emission priorMatrix
 def generateEmissionMatrix(trainingInput, tagIndex, wordIndex):
 	wordhm = {}
 	taghm = {}
@@ -39,6 +40,7 @@ def generateEmissionMatrix(trainingInput, tagIndex, wordIndex):
 
 	return emissionMatrix
 
+#Method to generate TransitionMatrix
 def generateTransitionMatrix(trainingInput, tagIndex):
 	hm = {}
 	i = 0
@@ -70,9 +72,9 @@ def generateTransitionMatrix(trainingInput, tagIndex):
 
 	return transitionMatrix
 
+#Method to generate Priors for HMM
 def generatePriorMatrix(trainingInput, tagIndex):
 	hm = {}
-	total = 0
 
 	i = 0
 	for word in tagIndex:
@@ -90,9 +92,8 @@ def generatePriorMatrix(trainingInput, tagIndex):
 		key = keys[1]
 		idx = hm[key]
 		priorMatrix[idx] = priorMatrix[idx] + 1
-		total = total + 1
 
-	return priorMatrix / total
+	return priorMatrix / np.sum(priorMatrix)
 
 
 if __name__ == '__main__':
