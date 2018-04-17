@@ -3,23 +3,23 @@ from FileIO import readFile
 import sys
 import numpy as np
 
-def generateEmissionMatrix(trainingInput, wordIndex, indexToWord):
+def generateEmissionMatrix(trainingInput, tagIndex, wordIndex):
 	wordhm = {}
 	taghm = {}
 
 	i = 0
-	for word in wordIndex:
+	for word in tagIndex:
 		word = word.strip()
 		taghm[word] = i 
 		i = i + 1
 
 	i = 0
-	for word in indexToWord:
+	for word in wordIndex:
 		word = word.strip()
 		wordhm[word] = i
 		i = i + 1
 
-	emissionMatrix = np.ones(shape = (len(wordIndex), len(indexToWord)))
+	emissionMatrix = np.ones(shape = (len(tagIndex), len(wordIndex)))
 
 	for line in trainingInput:
 		line = line.strip()
@@ -39,15 +39,15 @@ def generateEmissionMatrix(trainingInput, wordIndex, indexToWord):
 
 	return emissionMatrix
 
-def generateTransitionMatrix(trainingInput, wordIndex):
+def generateTransitionMatrix(trainingInput, tagIndex):
 	hm = {}
 	i = 0
-	for word in wordIndex:
+	for word in tagIndex:
 		word = word.strip()
 		hm[word] = i
 		i = i + 1
 
-	transitionMatrix = np.ones(shape = (len(wordIndex), len(wordIndex)))
+	transitionMatrix = np.ones(shape = (len(tagIndex), len(tagIndex)))
 
 	for line in trainingInput:
 		line = line.strip()
@@ -70,17 +70,17 @@ def generateTransitionMatrix(trainingInput, wordIndex):
 
 	return transitionMatrix
 
-def generatePriorMatrix(trainingInput, wordIndex):
+def generatePriorMatrix(trainingInput, tagIndex):
 	hm = {}
 	total = 0
 
 	i = 0
-	for word in wordIndex:
+	for word in tagIndex:
 		word = word.strip()
 		hm[word] = i
 		i = i + 1
 
-	priorMatrix = np.ones(len(wordIndex))
+	priorMatrix = np.ones(len(tagIndex))
 
 	for line in trainingInput:
 		line = line.strip()
@@ -110,19 +110,19 @@ if __name__ == '__main__':
 	#Read the word index file
 	wordIndex = readFile(indexWordFile)
 	#Read the index to word file
-	indexToWord = readFile(indexTagFile)
+	tagIndex = readFile(indexTagFile)
 
 	#Generate Prior Matrix
-	priorMatrix = generatePriorMatrix(trainingInput, wordIndex)
-	np.savetxt(hmmPriorFile, priorMatrix, fmt = '%1.10e')
+	priorMatrix = generatePriorMatrix(trainingInput, tagIndex)
+	np.savetxt(hmmPriorFile, priorMatrix)
 
 	#Generate Transition Matrix
-	transitionMatrix = generateTransitionMatrix(trainingInput, wordIndex)
-	np.savetxt(hmmTransitionFile, transitionMatrix, fmt = '%1.10e')
+	transitionMatrix = generateTransitionMatrix(trainingInput, tagIndex)
+	np.savetxt(hmmTransitionFile, transitionMatrix)
 
 	#Generate Emission Matrix
-	emissionMatrix = generateEmissionMatrix(trainingInput, wordIndex, indexToWord)
-	np.savetxt(hmmEmissionFile, emissionMatrix, fmt = '%1.10e')
+	emissionMatrix = generateEmissionMatrix(trainingInput, tagIndex, wordIndex)
+	np.savetxt(hmmEmissionFile, emissionMatrix)
 
 
 	
